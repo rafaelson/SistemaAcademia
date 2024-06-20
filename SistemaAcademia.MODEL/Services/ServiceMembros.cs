@@ -12,11 +12,13 @@ namespace SistemaAcademia.MODEL.Services
     {
         public RepositoryMembros oRepositoryMembros { get; set; }
         private SistemaAcademiaContext _context;
+        private ServicePlanosTreino _servicePlanosTreino;
 
         public ServiceMembros(SistemaAcademiaContext context)
         {
             _context = context;
             oRepositoryMembros = new RepositoryMembros(context);
+            _servicePlanosTreino = new ServicePlanosTreino(context);
         }
 
         public async Task IncluirMembro(Membros membro)
@@ -32,6 +34,13 @@ namespace SistemaAcademia.MODEL.Services
         public async Task ExcluirMembro(int id)
         {
             var membro = await oRepositoryMembros.SelecionarChaveAsync(id);
+            var treinos = await _servicePlanosTreino.SelecionarTodosPlanosTreino();
+            var treinosMembro = treinos.Where((treino) => treino.MembroId == id);
+
+            foreach (var item in treinosMembro)
+            {
+                await _servicePlanosTreino.ExcluirPlanoTreino(item.Id);
+            }
             if (membro != null)
             {
                 await oRepositoryMembros.ExcluirAsync(membro);
